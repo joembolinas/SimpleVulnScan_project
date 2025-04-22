@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Scan URL - SimpleVulnScan{% endblock %}
+
+{% block content %}
+    <h2>Enter URL to Scan</h2>
+    {% if error_message %}
+        <p class="error">{{ error_message }}</p>
+    {% endif %}
+    <form method="POST" action="{{ url_for('index') }}">
+        <label for="url">Website URL:</label>
+        <input type="text" id="url" name="url" required placeholder="e.g., https://example.com" value="{{ target_url or '' }}">
+        <button type="submit">Start Scan</button>
+    </form>
+
+    {% if results %}
+        <hr>
+        <h2>Scan Results for: {{ results.target_url }}</h2>
+
+        {% if results.scan_status == 'error' %}
+            <p class="error">Scan failed: {{ results.error }}</p>
+        {% elif results.scan_status == 'completed' %}
+            <div class="results-section">
+                <h3>Basic Checks</h3>
+                <ul>
+                    <!-- Server Info -->
+                    <li>
+                        <strong>Server Information:</strong>
+                        {% if results.checks.server_info.present %}
+                            <span class="finding-{{ 'fail' if not results.checks.server_info.pass else 'pass' }}">
+                                Found: {{ results.checks.server_info.value }}
+                                {% if not results.checks.server_info.pass %} (Recommendation: {{ results.checks.server_info.recommendation }}) {% endif %}
+                            </span>
+                        {% else %}
+                            <span class="finding-pass">Not Found (Good).</span>
+                        {% endif %}
+                    </li>
+                    <!-- robots.txt -->
+                     <li>
+                        <strong>robots.txt:</strong>
+                         {% if results.checks.robots_txt.error %}
+                            <span class="finding-fail">Error checking: {{ results.checks.robots_txt.error }}</span>
+                         {% elif results.checks.robots_txt.present %}
+                             <span class="finding-info">Found (Status: {{ results.checks.robots_txt.status_code }}). Recommendation: {{ results.checks.robots_txt.recommendation }}</span>
+                         {% else %}
+                            <span class="finding-info">Not Found (Status: {{ results.checks.robots_txt.status_code }}).</span>
+                         {% endif %}
+                     </li>
+                    <!-- sitemap.xml -->
+                     <li>
+                        <strong>sitemap.xml:</strong>
+                         {% if results.checks.sitemap_xml.error %}
+                            <span class="finding-fail">Error checking: {{ results.checks.sitemap_xml.error }}</span>
+                         {% elif results.checks.sitemap_xml.present %}
+                             <span class="finding-info">Found (Status: {{ results.checks.sitemap_xml.status_code }}). Recommendation: {{ results.checks.sitemap_xml.recommendation }}</span>
+                         {% else %}
+                            <span class="finding-info">Not Found (Status: {{ results.checks.sitemap_xml.status_code }}).</span>
+                         {% endif %}
+                     </li>
+                </ul>
+            </div>
+
+            <div class="results-section">
+                <h3>HTTP Security Headers</h3>
+                <ul>
+                    {% for header, details in results.checks.http_headers.items() %}
+                    <li>
+                        <strong>{{ header }}:</strong>
+                        {% if details.present %}
+                            <span class="finding-{{ 'pass' if details.pass else 'fail' }}">
+                                Present. Value: "{{ details.value }}"
+                                {% if not details.pass %}(Recommendation: {{ details.recommendation }}){% endif %}
+                            </span>
+                        {% else %}
+                             <span class="finding-fail">Missing. (Recommendation: {{ details.recommendation }})</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+             <!-- Placeholder for Vulnerability Checks Results (Phase 3) -->
+            <!--
+            <div class="results-section">
+                <h3>Vulnerability Checks</h3>
+                 <ul>
+                    <li> Add XSS results here </li>
+                    <li> Add IDOR results here </li>
+                 </ul>
+            </div>
+            -->
+
+        {% endif %} {# end results.scan_status == 'completed' #}
+    {% endif %} {# end if results #}
+
+{% endblock %}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SimpleVulnScan{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Add CSS frameworks like Bootstrap or Tailwind later if desired -->
+</head>
+<body>
+    <header>
+        <h1>SimpleVulnScan</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Scan</a>
+            <!-- Add links for login/register/history in Phase 2 -->
+             <a href="#">Login</a>
+             <a href="#">Register</a>
+             <a href="#">History</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>© {{ now.year }} SimpleVulnScan. For educational purposes only. Use responsibly.</p>
+        {# Pass current year to template #}
+        {% set now = now() if now is undefined else now %}
+    </footer>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
